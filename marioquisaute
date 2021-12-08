@@ -1,0 +1,54 @@
+#c mon vieux code il est pas ouf
+import pygame
+import sys
+import time
+
+
+pygame.init()
+
+
+fenetre = pygame.display.set_mode((893, 676))
+timer = pygame.time.Clock()
+
+fond = pygame.image.load("background1.jpeg").convert()
+fenetre.blit(fond, (0, 0))
+
+
+mario = pygame.image.load("mario.png").convert_alpha()
+position_mario = mario.get_rect()
+position_mario = position_mario.move(310, 390)
+fenetre.blit(mario, (310, 390))
+
+
+pygame.display.flip()
+
+
+game_on = True
+
+while game_on:
+    for event in pygame.event.get():
+
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                position_mario = position_mario.move(0, -50)
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RIGHT:
+                position_mario = position_mario.move(20, 0)
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                position_mario = position_mario.move(-20, 0)
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_DOWN:
+                position_mario = position_mario.move(0, 50)
+
+    fenetre.blit(fond, (0, 0))
+    fenetre.blit(mario, position_mario)
+    pygame.display.flip()
+    timer.tick(30)
