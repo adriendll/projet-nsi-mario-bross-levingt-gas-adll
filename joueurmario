@@ -18,7 +18,14 @@ class   Joueurmario(pygame.sprite.Sprite):
         self.tir_autorise = 1
         self.direction = 2
 
-        self.joueur_debout = [pygame.Rect(0, 0, 111, 145)]
+        self.joueur_debout = [
+            pygame.Rect(2, 558, 104, 144),
+            pygame.Rect(118, 560, 102, 144),
+            pygame.Rect(232, 558, 100, 144),
+            pygame.Rect(332, 558, 106, 144),
+            pygame.Rect(440, 556, 106, 148),
+            pygame.Rect(552, 560, 102, 138),
+        ]
 
         self.joueur_bouge = [
             pygame.Rect(0, 0, 111, 145),
@@ -30,10 +37,19 @@ class   Joueurmario(pygame.sprite.Sprite):
             pygame.Rect(727, 0, 117, 145),
 
         ]
-        self.etat ="debout"
+        self.etat = "debout"
         self.index = 0
 
-        #self.joueur_saute =
+        self.joueur_saute = [
+            pygame.Rect(2, 194, 100, 156),
+            pygame.Rect(102, 192, 116, 156),
+        ]
+
+        self.joueur_attaque = [
+            pygame.Rect(2, 308, 120, 150),
+            pygame.Rect(122, 384, 126, 144),
+            pygame.Rect(250, 382, 122, 144),
+        ]
 
     def mouvement(self, vitesse):
 
@@ -71,7 +87,7 @@ class   Joueurmario(pygame.sprite.Sprite):
                 self.saut_descente= 5
                 self.a_sauter = False
 
-        self.rect.y = self.rect.y - (10*(self.saut/2))
+        self.rect.y = self.rect.y - (7*(self.saut/2))
 
     def convertir_rect_surface(self, image, dict):
 
@@ -91,5 +107,21 @@ class   Joueurmario(pygame.sprite.Sprite):
             self.joueur_bouge.append(image_joueur)
 
         dict["bouger"] = self.joueur_bouge
+
+        for image_saute in self.joueur_saute:
+            image_rect = self.joueur_saute.pop(0)
+            image_joueur = image.subsurface(image_rect)
+            image_joueur = pygame.transform.scale(image_joueur, (32, 64))
+            self.joueur_saute.append(image_joueur)
+
+        dict["saute"] = self.joueur_saute
+
+        for image_attaque in self.joueur_attaque:
+            image_rect = self.joueur_attaque.pop(0)
+            image_joueur = image.subsurface(image_rect)
+            image_joueur = pygame.transform.scale(image_joueur, (32, 64))
+            self.joueur_attaque.append(image_joueur)
+
+        dict["attaque"] = self.joueur_attaque
 
         return dict
