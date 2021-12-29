@@ -1,13 +1,15 @@
-"CE CODE MARCHE MAIS SEULEMENT AVEC MARIO LA JV FAIRE LE NINJA"
+"Le ninja bug et la fenetre se ferme quand on appuie sur 'tirer' "
 
-import sys,time
+import sys
+import time
 import pygame
 from pygame.sprite import Group
 from joueurmario import Joueurmario
 from sol import Sol
 from plateforme import Plateforme
-#from ninja import Ninja
+from ninja import Ninja
 from projectiles import Projectile
+#Slash
 
 
 class Jeu:
@@ -19,11 +21,17 @@ class Jeu:
         self.joueur_x, self.joueur_y = 200, 200
         self.taille = [32, 64]
         self.joueurmario_vitesse_x = 0
-        #self.ninja_vitesse_x = 0
+        self.ninja_vitesse_x = 0
         self.joueurmario = Joueurmario(self.joueur_x,self.joueur_x,self.taille)
-        #self.ninja = Ninja(self.joueur_x,self.joueur_x,self.taille)
+        self.ninja_x, self.ninja_y = 100, 400
+        self.ninja_taille = [32, 64]
 
-        self.image_arriere_plan = pygame.image.load("lunatic-mauvais-oeil (2).jpg")
+        self.image_joueur = pygame.image.load("marioracaille.png")
+        self.image_joueur_rect = pygame.Rect(0, 0, 111, 145)
+        self.image_ninja = pygame.image.load('kakashi.png')
+        self.ninja = Ninja(self.joueur_x,self.joueur_y,self.ninja_taille)
+
+        self.image_arriere_plan = pygame.image.load("lunatic.jpg")
         self.arriere_plan_rect = [0, 0, 949, 693]
         self.image_mur = self.image_arriere_plan.subsurface(self.arriere_plan_rect)
         self.image_mur = pygame.transform.scale(self.image_mur, (1000, 700))
@@ -42,27 +50,34 @@ class Jeu:
         self.resistance = (0, 0)
         self.collision_sol = False
 
-        #self.horloge = pygame.time.Clock()
-        #self.fps = 30
-        # self.projectile_groupe = Group()
-        # self.t1, self.t2 = 0, 0
-        # self.delta_temps = 0
+        self.horloge = pygame.time.Clock()
+        self.fps = 30
+        self.slash = Group()
+        self.projectile = Group()
+        self.t1, self.t2 = 0, 0
+        self.delta_temps = 0
+
+        self.projectile_groupe = Group()
+        self.image_boule_de_feu = pygame.image.load("fireball.png")
+        self.image_boule_de_feu_rect = pygame.Rect(95, 69, 9, 9)
+        self.image_boule_de_feu = self.image_boule_de_feu.subsurface(self.image_boule_de_feu_rect)
+
+        self.plateforme_groupe = Group()
+        self.plateforme_liste_rect = [
+        pygame.Rect(0, 550, 300, 50), pygame.Rect(700, 550, 300, 50),
+        pygame.Rect(340, 400, 300, 50)
+            ]
         # self.image_arriere_plan = pygame.image.load("background.jpg")
         # self.arriere_plan_rect = [0, 0, 893, 537]
         # self.image_ciel = self.image_arriere_plan.subsurface(self.arriere_plan_rect)
         # self.image_ciel = pygame.transform.scale(self.image_ciel, (1000, 700))
 
-        self.plateforme_groupe = Group()
-        self.plateforme_liste_rect = [
-            pygame.Rect(0, 580, 300, 50), pygame.Rect(700, 580, 300, 50),
-            pygame.Rect(340, 480, 300, 50), pygame.Rect(250, 310, 50, 50),
-        ]
-        self.image_joueur = pygame.image.load("marioracaille.png")
-        self.image_joueur_rect = pygame.Rect(0, 0, 111, 145)
-
-        #self.image_ninja = pygame.image.load("ninja.png")
+        #self.slash_groupe = Group()
+        #self.slash_image_rect = pygame.Rect(108,232,24,43)
+        #self.image_ninja = pygame.image.load("kakashi.png")
         #self.image_ninja_rect = pygame.Rect(0, 0, 62, 144)
-
+        #self.slash_image = self.image_ninja.subsurface(self.slash_image_rect)
+        #self.image_slash = pygame.transform.scale(self.image_slash(30,30), 1)   #J'AI RAJOUTE : ,1 A LA FIN
         #self.image_joueur1 = pygame.image.load("")
 
         #self.debut_time = 90000
@@ -70,14 +85,14 @@ class Jeu:
         #self.bouton_rect = pygame.Rect(0, 0, 148, 148)
         #self.image_bouton = self.bouton.subsurface(self.bouton_rect)
         #self.image_bouton = pygame.transform.scale(self.image_bouton, (50, 50))
-        # self.image_joueur = self.image_joueur.subsurface(self.image_joueur_rect)
+        #self.image_joueur = self.image_joueur.subsurface(self.image_joueur_rect)
 
     def boucle_principale(self):
 
-        dictionnaire_vide_joueurs = {}
-        dictionnaire_images_joueurs = self.joueurmario.convertir_rect_surface(self.image_joueur, dictionnaire_vide_joueurs)
-        #dictionnaire_vide_ninja = {}
-        #dictionnaire_images_ninja = self.ninja.image_liste(self.image_ninja, dictionnaire_vide_ninja)
+        dictionnaire_vide_joueur = {}
+        dictionnaire_images_joueur = self.joueurmario.convertir_rect_surface(self.image_joueur, dictionnaire_vide_joueur)
+        dictionnaire_vide_ninja = {}
+        dictionnaire_images_ninja = self.ninja.convertir_rect_surface(self.image_ninja, dictionnaire_vide_ninja)
 
         while self.jeu_encours:
 
@@ -106,6 +121,8 @@ class Jeu:
                         self.joueurmario.etat = "saute"
 
                     if event.key == pygame.K_s:
+                        self.t2 = time.time()
+                        self.joueurmario.a_tire = True
                         self.joueurmario.etat = "attaque"
 
                 "Actions quand une touche est levée :"
@@ -122,33 +139,21 @@ class Jeu:
                     if event.key == pygame.K_s:
                         self.joueurmario.etat = "debout"
 
-                "Actions de Ninja"
+                "ACTIONS DU NINJA :"
 
-                #if event.type == pygame.KEYUP:
-                #    if event.key == pygame.K_a:
-                #        self.ninja_vitesse_x = 0
-                #        self.ninja.etat = "debout"
+                if event.type == pygame.KEYDOWN:
+                    if event.key ==  pygame.K_e:
+                        self.ninja.etat = 'debout'
 
-                #if event.type == pygame.KEYUP:
-                #    if event.key == pygame.K_d:
-                #        self.ninja_vitesse_x = 0
-                #        self.ninja.etat = "debout"
+                    #if event.key == pygame.K_e:
+                        #self.ninja.a_attaque = True
+                        #self.ninja.etat = "attaque"
 
-                #if event.type == pygame.KEYDOWN:
-                #    if event.key == pygame.K_a:
-                #        self.ninja_vitesse_x = -10
-                #        self.ninja.direction = -1
-                #        self.ninja.etat = "bouger"
+                "VIDEO PROJECTILES"
 
-                #if event.type == pygame.KEYDOWN:
-                #    if event.key == pygame.K_d:
-                #        self.ninja_vitesse_x = 10
-                #        self.ninja.direction = 1
-                #        self.ninja.etat = "bouger"
-
-                #   if event.key == pygame.K_w:
-                #        self.ninja.a_sauter = True
-                #        self.ninja.nombre_de_saut += 1
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        self.t1 = time.time()
 
 
             if self.sol.rect.colliderect(self.joueurmario.rect):
@@ -164,6 +169,29 @@ class Jeu:
                 if self.joueurmario.nombre_de_saut < 2:
                     self.joueurmario.sauter()
 
+            if self.joueurmario.a_tire:
+                if len (self.projectile_groupe) < self.joueurmario.tir_autorise and self.delta_temps > 0.05 :
+                    projectile = Projectile (self.joueurmario.rect.x + 20, self.joueurmario.rect.y - 5, [10, 10], self.joueurmario.direction,
+                                             self.image_boule_de_feu)
+                    self.projectile_groupe.add(projectile)
+                    self.joueurmario.a_tire = False
+
+            for projectile in self.projectile_groupe:
+                projectile.mouvement(50)
+                if projectile.rect.right >= self.rect.right or projectile.rect.left <= self.rect.left:
+                    self.projectile_groupe.remove(projectile)
+
+                #if self.ninja.a_attaque:
+                    #if len(self.slash_groupe) < self.ninja.tir_autorise :
+                        #slash = Slash (self.ninja.rect.x + 20, self.ninja.rect.y - 5, [30, 30], self.image_slash)
+                    #self.slash_groupe.remove(slash)
+                    #self.ninja.a_attaque = False
+
+            #for slash in self.slash_groupe:
+                #slash.mouvement(50)
+                #if slash.rect.right >= self.rect.right or slash.rect.left <= self.rect.left:
+                    #self.slash_groupe.remove(slash)
+
             #secondes = (self.debut_time - pygame.time.get_ticks()) // 1000
 
             for rectangle in self.plateforme_liste_rect:
@@ -174,7 +202,9 @@ class Jeu:
                    self.resistance = (0, -10)
                    self.joueurmario.nombre_de_saut = 0
 
-            #self.ninja.mouvement(self.ninja_vitesse_x)
+
+            self.delta_temps = self.t2 - self.t1
+            self.ninja.mouvement(self.ninja_vitesse_x)
             self.joueurmario.mouvement(self.joueurmario_vitesse_x)
             self.gravite_jeu()
             #self.joueurmario.sauter()
@@ -183,18 +213,26 @@ class Jeu:
             self.sol.afficher(self.ecran)
             #self.ecran.blit(self.image_ciel, self.rect)
             #self.joueurmario.rect.clamp_ip(self.rect)
-            self.joueurmario.afficher(self.ecran, dictionnaire_images_joueurs)
-            #self.ninja.afficher(self.ecran, dictionnaire_images_ninja)
+            self.joueurmario.afficher(self.ecran, dictionnaire_images_joueur)
+            self.ninja.afficher(self.ecran, dictionnaire_images_ninja)
             #self.horloge.tick(self.fps)
             #self.ecran.blit(self.image_bouton, (525, 20, 50, 50))
             #self.creer_message('grande', '()'.format(secondes), [535, 60, 20, 20], (255, 255, 255))
             for plateforme in self.plateforme_groupe:
                 plateforme.afficher(self.ecran)
+
+            for projectile in self.projectile_groupe:
+                projectile.afficher(self.ecran, self.delta_temps)
+            #for slash in self.slash_groupe:
+                #slash.afficher(self.ecran)
+
             pygame.display.flip()
+
 
     def gravite_jeu(self):
 
         self.joueurmario.rect.y += self.gravite[1] + self.resistance[1]
+
 
     #def creer_message(self, font, message, message_rectangle, couleur):
         #if font == 'petite':
