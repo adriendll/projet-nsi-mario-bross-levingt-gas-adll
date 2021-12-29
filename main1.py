@@ -50,7 +50,7 @@ class Jeu:
 
         self.gravite = (0, 10)
         self.resistance = (0, 0)
-        self.collision_sol = False
+        self.collision_sol = True
 
         self.horloge = pygame.time.Clock()
         self.fps = 30
@@ -69,10 +69,6 @@ class Jeu:
         pygame.Rect(0, 550, 300, 50), pygame.Rect(700, 550, 300, 50),
         pygame.Rect(340, 400, 300, 50)
             ]
-        # self.image_arriere_plan = pygame.image.load("background.jpg")
-        # self.arriere_plan_rect = [0, 0, 893, 537]
-        # self.image_ciel = self.image_arriere_plan.subsurface(self.arriere_plan_rect)
-        # self.image_ciel = pygame.transform.scale(self.image_ciel, (1000, 700))
 
         #self.slash_groupe = Group()
         #self.slash_image_rect = pygame.Rect(108,232,24,43)
@@ -102,6 +98,7 @@ class Jeu:
                 if event.type == pygame.QUIT:
                     sys.exit()
 
+
                 "ACTIONS DE MARIO:"
 
                 "Actions quand une touche est enfoncée :"
@@ -127,6 +124,9 @@ class Jeu:
                         self.joueurmario.a_tire = True
                         self.joueurmario.etat = "attaque"
 
+                    if event.key == pygame.K_p:
+                        self.t1 = time.time()
+
                 "Actions quand une touche est levée :"
 
                 if event.type == pygame.KEYUP:
@@ -140,6 +140,7 @@ class Jeu:
 
                     if event.key == pygame.K_s:
                         self.joueurmario.etat = "debout"
+
 
                 "ACTIONS DU NINJA :"
 
@@ -156,7 +157,7 @@ class Jeu:
                         self.ninja.etat = "bouger"
 
                     if event.key == pygame.K_q:
-                        self.ninja_vitesse_x = 10
+                        self.ninja_vitesse_x = -10
                         self.ninja.direction = -1
                         self.ninja.etat = "bouger"
 
@@ -185,11 +186,6 @@ class Jeu:
                         self.ninja.a_attaque = False
                         self.ninja.etat = "debout"
 
-                "VIDEO PROJECTILES"
-
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_p:
-                        self.t1 = time.time()
 
             "Collision entre Mario et le sol :"
 
@@ -205,6 +201,7 @@ class Jeu:
             if self.joueurmario.a_sauter and self.collision_sol:
                 if self.joueurmario.nombre_de_saut < 2:
                     self.joueurmario.sauter()
+                    
 
             "Collision entre Ninja et le sol :"
 
@@ -219,7 +216,7 @@ class Jeu:
 
             if self.ninja.a_sauter and self.collision_sol:
                 if self.ninja.nombre_de_saut < 2:
-                    self.ninja.a_sauter()
+                    self.ninja.sauter()
 
             "Attaque de Mario :"
 
@@ -251,6 +248,7 @@ class Jeu:
             for rectangle in self.plateforme_liste_rect:
                plateforme = Plateforme(rectangle, self.image_plat)
                self.plateforme_groupe.add(plateforme)
+
                if self.joueurmario.rect.midbottom[1] // 10 * 10 == plateforme.rect.top \
                        and self.joueurmario.rect.colliderect(rectangle):
                    self.resistance = (0, -10)
@@ -261,16 +259,11 @@ class Jeu:
                    self.resistance = (0, -10)
                    self.ninja.nombre_de_saut = 0
 
-            #for rectangle in self.plateforme_liste_rect:
-               #plateforme = Plateforme(rectangle, self.image_plat)
-               #self.plateforme_groupe.add(plateforme)
-
 
             self.delta_temps = self.t2 - self.t1
             self.ninja.mouvement(self.ninja_vitesse_x)
             self.joueurmario.mouvement(self.joueurmario_vitesse_x)
             self.gravite_jeu()
-            #self.joueurmario.sauter()
             self.ecran.fill("Black")
             self.ecran.blit(self.image_mur, self.arriere_plan_rect)
             self.sol.afficher(self.ecran)
@@ -279,7 +272,7 @@ class Jeu:
             self.ninja.rect.clamp_ip(self.rect)
             self.joueurmario.afficher(self.ecran, dictionnaire_images_joueur)
             self.ninja.afficher(self.ecran, dictionnaire_images_ninja)
-            #self.horloge.tick(self.fps)
+            self.horloge.tick(self.fps)
             #self.ecran.blit(self.image_bouton, (525, 20, 50, 50))
             #self.creer_message('grande', '()'.format(secondes), [535, 60, 20, 20], (255, 255, 255))
             for plateforme in self.plateforme_groupe:
