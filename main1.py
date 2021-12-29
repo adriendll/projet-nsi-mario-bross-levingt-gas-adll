@@ -1,6 +1,9 @@
 "A corriger : full bug au niveau des sauts de mario et du ninja + ninja qui a pas de gravité au début "
 "Rajouter la collision entre les et enlever les hashtag sur les attaques du ninja pour voir ce que ça fait "
 
+"Dcp j'ai corrigé les problèmes ci dessus, la mnt faudrait réussir à faire en sorte que les personnages redeviennet à l'état debout en touchant le sol après avoir sauté, "
+"parce que la il restent debout mais ils gardent les images du saut "
+
 import sys
 import time
 import pygame
@@ -10,7 +13,7 @@ from sol import Sol
 from plateforme import Plateforme
 from ninja import Ninja
 from projectiles import Projectile
-#Slash
+# Slash
 
 
 class Jeu:
@@ -23,14 +26,14 @@ class Jeu:
         self.taille = [32, 64]
         self.joueurmario_vitesse_x = 0
         self.ninja_vitesse_x = 0
-        self.joueurmario = Joueurmario(self.joueur_x,self.joueur_x,self.taille)
+        self.joueurmario = Joueurmario(self.joueur_x, self.joueur_x, self.taille)
         self.ninja_x, self.ninja_y = 100, 400
         self.ninja_taille = [39, 64]
 
         self.image_joueur = pygame.image.load("marioracaille.png")
         self.image_joueur_rect = pygame.Rect(0, 0, 111, 145)
         self.image_ninja = pygame.image.load('kakashi.png')
-        self.ninja = Ninja(self.joueur_x,self.joueur_y,self.ninja_taille)
+        self.ninja = Ninja(self.joueur_x, self.joueur_y, self.ninja_taille)
 
         self.image_arriere_plan = pygame.image.load("lunatic.jpg")
         self.arriere_plan_rect = [0, 0, 949, 693]
@@ -48,9 +51,17 @@ class Jeu:
         self.image_plat = self.image_sol_brique.subsurface(self.image_plat_rect)
         self.image_plat = pygame.transform.scale(self.image_plat, (300, 50))
 
-        self.gravite = (0, 10)
-        self.resistance = (0, 0)
-        self.collision_sol = True
+        #self.gravite = (0, 10)
+        self.joueurmario.gravite = (0, 10)
+        self.ninja.gravite = (0, 10)
+
+        #self.resistance = (0, 0)
+        self.joueurmario.resistance = (0, 0)
+        self.ninja.resistance = (0, 0)
+
+        #self.collision_sol = True
+        self.joueurmario.collision_sol = True
+        self.ninja.collision_sol = True
 
         self.horloge = pygame.time.Clock()
         self.fps = 30
@@ -66,29 +77,30 @@ class Jeu:
 
         self.plateforme_groupe = Group()
         self.plateforme_liste_rect = [
-        pygame.Rect(0, 550, 300, 50), pygame.Rect(700, 550, 300, 50),
-        pygame.Rect(340, 400, 300, 50)
-            ]
+            pygame.Rect(0, 550, 300, 50), pygame.Rect(700, 550, 300, 50),
+            pygame.Rect(340, 400, 300, 50)
+        ]
 
-        #self.slash_groupe = Group()
-        #self.slash_image_rect = pygame.Rect(108,232,24,43)
-        #self.image_ninja = pygame.image.load("kakashi.png")
-        #self.image_ninja_rect = pygame.Rect(0, 0, 62, 144)
-        #self.slash_image = self.image_ninja.subsurface(self.slash_image_rect)
-        #self.image_slash = pygame.transform.scale(self.image_slash(30,30), 1)   #J'AI RAJOUTE : ,1 A LA FIN
-        #self.image_joueur1 = pygame.image.load("")
+        # self.slash_groupe = Group()
+        # self.slash_image_rect = pygame.Rect(108,232,24,43)
+        # self.image_ninja = pygame.image.load("kakashi.png")
+        # self.image_ninja_rect = pygame.Rect(0, 0, 62, 144)
+        # self.slash_image = self.image_ninja.subsurface(self.slash_image_rect)
+        # self.image_slash = pygame.transform.scale(self.image_slash(30,30), 1)   #J'AI RAJOUTE : ,1 A LA FIN
+        # self.image_joueur1 = pygame.image.load("")
 
-        #self.debut_time = 90000
-        #self.bouton = pygame.image.load("play_button.png")
-        #self.bouton_rect = pygame.Rect(0, 0, 148, 148)
-        #self.image_bouton = self.bouton.subsurface(self.bouton_rect)
-        #self.image_bouton = pygame.transform.scale(self.image_bouton, (50, 50))
-        #self.image_joueur = self.image_joueur.subsurface(self.image_joueur_rect)
+        # self.debut_time = 90000
+        # self.bouton = pygame.image.load("play_button.png")
+        # self.bouton_rect = pygame.Rect(0, 0, 148, 148)
+        # self.image_bouton = self.bouton.subsurface(self.bouton_rect)
+        # self.image_bouton = pygame.transform.scale(self.image_bouton, (50, 50))
+        # self.image_joueur = self.image_joueur.subsurface(self.image_joueur_rect)
 
     def boucle_principale(self):
 
         dictionnaire_vide_joueur = {}
-        dictionnaire_images_joueur = self.joueurmario.convertir_rect_surface(self.image_joueur, dictionnaire_vide_joueur)
+        dictionnaire_images_joueur = self.joueurmario.convertir_rect_surface(self.image_joueur,
+                                                                             dictionnaire_vide_joueur)
         dictionnaire_vide_ninja = {}
         dictionnaire_images_ninja = self.ninja.convertir_rect_surface(self.image_ninja, dictionnaire_vide_ninja)
 
@@ -97,7 +109,6 @@ class Jeu:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     sys.exit()
-
 
                 "ACTIONS DE MARIO:"
 
@@ -141,14 +152,13 @@ class Jeu:
                     if event.key == pygame.K_s:
                         self.joueurmario.etat = "debout"
 
-
                 "ACTIONS DU NINJA :"
 
                 "Actions quand une touche est enfoncée :"
 
                 if event.type == pygame.KEYDOWN:
 
-                    if event.key ==  pygame.K_e:
+                    if event.key == pygame.K_e:
                         self.ninja.etat = 'debout'
 
                     if event.key == pygame.K_d:
@@ -186,44 +196,51 @@ class Jeu:
                         self.ninja.a_attaque = False
                         self.ninja.etat = "debout"
 
-
             "Collision entre Mario et le sol :"
 
             if self.sol.rect.colliderect(self.joueurmario.rect):
 
-                self.resistance = (0, -10)
-                self.collision_sol = True
+                #self.resistance = (0, -10)
+                self.joueurmario.resistance = (0, -10)
+                #self.collision_sol = True
+                self.joueurmario.collision_sol = True
                 self.joueurmario.nombre_de_saut = 0
 
             else:
-                self.resistance = (0, 0)
+                #self.resistance = (0, 0)
+                self.joueurmario.resistance = (0, 0)
 
-            if self.joueurmario.a_sauter and self.collision_sol:
+            #if self.joueurmario.a_sauter and self.collision_sol:
+            if self.joueurmario.a_sauter and self.joueurmario.collision_sol:
                 if self.joueurmario.nombre_de_saut < 2:
                     self.joueurmario.sauter()
-                    
 
             "Collision entre Ninja et le sol :"
 
             if self.sol.rect.colliderect(self.ninja.rect):
 
-                self.resistance = (0, -10)
-                self.collision_sol = True
+                #self.resistance = (0, -10)
+                self.ninja.resistance = (0, -10)
+                #self.collision_sol = True
+                self.ninja.collision_sol = True
                 self.ninja.nombre_de_saut = 0
 
             else:
-                self.resistance = (0, 0)
+                # self.resistance = (0, 0)
+                self.ninja.resistance = (0, 0)
 
-            if self.ninja.a_sauter and self.collision_sol:
+            #if self.ninja.a_sauter and self.collision_sol:
+            if self.ninja.a_sauter and self.ninja.collision_sol:
                 if self.ninja.nombre_de_saut < 2:
                     self.ninja.sauter()
 
             "Attaque de Mario :"
 
             if self.joueurmario.a_tire:
-                if len (self.projectile_groupe) < self.joueurmario.tir_autorise and self.delta_temps > 0.05 :
-                    projectile = Projectile (self.joueurmario.rect.x + 20, self.joueurmario.rect.y - 5, [10, 10], self.joueurmario.direction,
-                                             self.image_boule_de_feu)
+                if len(self.projectile_groupe) < self.joueurmario.tir_autorise and self.delta_temps > 0.05:
+                    projectile = Projectile(self.joueurmario.rect.x + 20, self.joueurmario.rect.y - 5, [10, 10],
+                                            self.joueurmario.direction,
+                                            self.image_boule_de_feu)
                     self.projectile_groupe.add(projectile)
                     self.joueurmario.a_tire = False
 
@@ -232,77 +249,83 @@ class Jeu:
                 if projectile.rect.right >= self.rect.right or projectile.rect.left <= self.rect.left:
                     self.projectile_groupe.remove(projectile)
 
-                #if self.ninja.a_attaque:
-                    #if len(self.slash_groupe) < self.ninja.tir_autorise :
-                        #slash = Slash (self.ninja.rect.x + 20, self.ninja.rect.y - 5, [30, 30], self.image_slash)
-                    #self.slash_groupe.remove(slash)
-                    #self.ninja.a_attaque = False
+                # if self.ninja.a_attaque:
+                # if len(self.slash_groupe) < self.ninja.tir_autorise :
+                # slash = Slash (self.ninja.rect.x + 20, self.ninja.rect.y - 5, [30, 30], self.image_slash)
+                # self.slash_groupe.remove(slash)
+                # self.ninja.a_attaque = False
 
-            #for slash in self.slash_groupe:
-                #slash.mouvement(50)
-                #if slash.rect.right >= self.rect.right or slash.rect.left <= self.rect.left:
-                    #self.slash_groupe.remove(slash)
+            # for slash in self.slash_groupe:
+            # slash.mouvement(50)
+            # if slash.rect.right >= self.rect.right or slash.rect.left <= self.rect.left:
+            # self.slash_groupe.remove(slash)
 
-            #secondes = (self.debut_time - pygame.time.get_ticks()) // 1000
+            # secondes = (self.debut_time - pygame.time.get_ticks()) // 1000
 
             for rectangle in self.plateforme_liste_rect:
-               plateforme = Plateforme(rectangle, self.image_plat)
-               self.plateforme_groupe.add(plateforme)
+                plateforme = Plateforme(rectangle, self.image_plat)
+                self.plateforme_groupe.add(plateforme)
 
-               if self.joueurmario.rect.midbottom[1] // 10 * 10 == plateforme.rect.top \
-                       and self.joueurmario.rect.colliderect(rectangle):
-                   self.resistance = (0, -10)
-                   self.joueurmario.nombre_de_saut = 0
+                if self.joueurmario.rect.midbottom[1] // 10 * 10 == plateforme.rect.top \
+                        and self.joueurmario.rect.colliderect(rectangle):
+                    #self.resistance = (0, -10)
+                    self.joueurmario.resistance = (0, -10)
+                    self.joueurmario.nombre_de_saut = 0
 
-               if self.ninja.rect.midbottom[1] // 10 * 10 == plateforme.rect.top \
-                       and self.ninja.rect.colliderect(rectangle):
-                   self.resistance = (0, -10)
-                   self.ninja.nombre_de_saut = 0
-
+                if self.ninja.rect.midbottom[1] // 10 * 10 == plateforme.rect.top \
+                        and self.ninja.rect.colliderect(rectangle):
+                    #self.resistance = (0, -10)
+                    self.ninja.resistance = (0, -10)
+                    self.ninja.nombre_de_saut = 0
 
             self.delta_temps = self.t2 - self.t1
             self.ninja.mouvement(self.ninja_vitesse_x)
             self.joueurmario.mouvement(self.joueurmario_vitesse_x)
-            self.gravite_jeu()
+            #self.gravite_jeu()
+            self.joueurmario_gravite_jeu()
+            self.ninja_gravite_jeu()
             self.ecran.fill("Black")
             self.ecran.blit(self.image_mur, self.arriere_plan_rect)
             self.sol.afficher(self.ecran)
-            #self.ecran.blit(self.image_ciel, self.rect)
+            # self.ecran.blit(self.image_ciel, self.rect)
             self.joueurmario.rect.clamp_ip(self.rect)
             self.ninja.rect.clamp_ip(self.rect)
             self.joueurmario.afficher(self.ecran, dictionnaire_images_joueur)
             self.ninja.afficher(self.ecran, dictionnaire_images_ninja)
             self.horloge.tick(self.fps)
-            #self.ecran.blit(self.image_bouton, (525, 20, 50, 50))
-            #self.creer_message('grande', '()'.format(secondes), [535, 60, 20, 20], (255, 255, 255))
+            # self.ecran.blit(self.image_bouton, (525, 20, 50, 50))
+            # self.creer_message('grande', '()'.format(secondes), [535, 60, 20, 20], (255, 255, 255))
             for plateforme in self.plateforme_groupe:
                 plateforme.afficher(self.ecran)
 
             for projectile in self.projectile_groupe:
                 projectile.afficher(self.ecran, self.delta_temps)
-            #for slash in self.slash_groupe:
-                #slash.afficher(self.ecran)
+            # for slash in self.slash_groupe:
+            # slash.afficher(self.ecran)
 
             pygame.display.flip()
 
+    def joueurmario_gravite_jeu(self):
 
-    def gravite_jeu(self):
+        #self.joueurmario.rect.y += self.gravite[1] + self.resistance[1]
+        self.joueurmario.rect.y += self.joueurmario.gravite[1] + self.joueurmario.resistance[1]
 
-        self.joueurmario.rect.y += self.gravite[1] + self.resistance[1]
-        self.ninja.rect.y += self.gravite[1] + self.resistance[1]
+    def ninja_gravite_jeu(self):
+        #self.ninja.rect.y += self.gravite[1] + self.resistance[1]
+        self.ninja.rect.y += self.ninja.gravite[1] + self.ninja.resistance[1]
 
-    #def creer_message(self, font, message, message_rectangle, couleur):
-        #if font == 'petite':
-            #font = pygame.font.SysFont('lato', 20, False)
+    # def creer_message(self, font, message, message_rectangle, couleur):
+    # if font == 'petite':
+    # font = pygame.font.SysFont('lato', 20, False)
 
-        #elif font == 'moyenne':
-            #font = pygame.font.SysFont('lato', 30, False)
+    # elif font == 'moyenne':
+    # font = pygame.font.SysFont('lato', 30, False)
 
-        #elif font == 'grande':
-            #font = pygame.font.SysFont('lato', 40, False)
+    # elif font == 'grande':
+    # font = pygame.font.SysFont('lato', 40, False)
 
-            #message = font.render(message, True, couleur)
-            #self.ecran.blit(message_rectangle)
+    # message = font.render(message, True, couleur)
+    # self.ecran.blit(message_rectangle)
 
 
 if __name__ == '__main__':
