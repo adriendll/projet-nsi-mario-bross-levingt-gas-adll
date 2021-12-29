@@ -1,5 +1,3 @@
-"Pas de problème avec ce code normalement"
-
 import pygame
 
 class   Ninja(pygame.sprite.Sprite):
@@ -83,24 +81,23 @@ class   Ninja(pygame.sprite.Sprite):
 
         #image = dict[self.etat][self.index]
         surface.blit(image, self.rect)
+    def sauter(self):
+        if self.a_sauter:
 
-        def sauter(self):
-            if self.a_sauter:
+            if self.saut_montee >= 10:
+                self.saut_descente -= 1
+                self.saut = self.saut_descente
 
-                if self.saut_montee >= 10:
-                    self.saut_descente -= 1
-                    self.saut = self.saut_descente
+            else:
+                self.saut_montee += 1
+                self.saut = self.saut_montee
 
-                else:
-                    self.saut_montee += 1
-                    self.saut = self.saut_montee
+            if self.saut_descente < 0:
+                self.saut_montee = 0
+                self.saut_descente= 5
+                self.a_sauter = False
 
-                if self.saut_descente < 0:
-                    self.saut_montee = 0
-                    self.saut_descente = 5
-                    self.a_sauter = False
-
-            self.rect.y = self.rect.y - (7 * (self.saut / 2))
+        self.rect.y = self.rect.y - (7*(self.saut/2))
 
     def convertir_rect_surface(self, image, dict):
 
@@ -139,5 +136,13 @@ class   Ninja(pygame.sprite.Sprite):
 
         return dict
 
+
+        #for image_attaque in self.ninja_attaque:
+            #rect_joueur = self.ninja_attaque.pop(0)
+            #image_joueur = image.subsurface(rect_joueur)
+            #image_joueur = pygame.transform.scale(image_joueur, (80, 60))
+            #self.ninja_attaque.append(image_joueur)
+
+        #dict['ninja'] = self.ninja_attaque
 
         
