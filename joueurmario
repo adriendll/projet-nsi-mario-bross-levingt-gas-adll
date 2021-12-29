@@ -15,8 +15,8 @@ class   Joueurmario(pygame.sprite.Sprite):
         self.nombre_de_saut = 0
         self.a_sauter = False
         self.a_tire = False
-        self.tir_autorise = 1
-        self.direction = 2
+        self.tir_autorise = 2
+        self.direction = 1
 
         self.joueur_debout = [
             pygame.Rect(2, 558, 104, 144),
@@ -46,7 +46,7 @@ class   Joueurmario(pygame.sprite.Sprite):
         ]
 
         self.joueur_attaque = [
-            pygame.Rect(2, 308, 120, 150),
+            pygame.Rect(2, 384, 120, 150),
             pygame.Rect(122, 384, 126, 144),
             pygame.Rect(250, 382, 122, 144),
         ]
@@ -69,7 +69,6 @@ class   Joueurmario(pygame.sprite.Sprite):
 
         #image = dict[self.etat][self.index]
         surface.blit(image, self.rect)
-        pygame.draw.rect(surface,("Red"),self.rect, 1)
 
     def sauter(self):
         if self.a_sauter:
