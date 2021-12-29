@@ -25,7 +25,7 @@ class Jeu:
         self.ninja_vitesse_x = 0
         self.joueurmario = Joueurmario(self.joueur_x,self.joueur_x,self.taille)
         self.ninja_x, self.ninja_y = 100, 400
-        self.ninja_taille = [32, 64]
+        self.ninja_taille = [39, 64]
 
         self.image_joueur = pygame.image.load("marioracaille.png")
         self.image_joueur_rect = pygame.Rect(0, 0, 111, 145)
@@ -61,7 +61,7 @@ class Jeu:
 
         self.projectile_groupe = Group()
         self.image_boule_de_feu = pygame.image.load("fireball.png")
-        self.image_boule_de_feu_rect = pygame.Rect(95, 69, 9, 9)
+        self.image_boule_de_feu_rect = pygame.Rect(13, 69, 9, 9)
         self.image_boule_de_feu = self.image_boule_de_feu.subsurface(self.image_boule_de_feu_rect)
 
         self.plateforme_groupe = Group()
@@ -165,9 +165,9 @@ class Jeu:
                         self.ninja.nombre_de_saut += 1
                         self.ninja.etat = "saute"
 
-                    #if event.key == pygame.K_e:
-                        #self.ninja.a_attaque = True
-                        #self.ninja.etat = "attaque"
+                    if event.key == pygame.K_e:
+                        self.ninja.a_attaque = True
+                        self.ninja.etat = "attaque"
 
                 "Actions quand une touche est levée :"
 
@@ -179,6 +179,10 @@ class Jeu:
 
                     if event.key == pygame.K_q:
                         self.ninja_vitesse_x = 0
+                        self.ninja.etat = "debout"
+
+                    if event.key == pygame.K_e:
+                        self.ninja.a_attaque = False
                         self.ninja.etat = "debout"
 
                 "VIDEO PROJECTILES"
@@ -251,6 +255,15 @@ class Jeu:
                        and self.joueurmario.rect.colliderect(rectangle):
                    self.resistance = (0, -10)
                    self.joueurmario.nombre_de_saut = 0
+
+               if self.ninja.rect.midbottom[1] // 10 * 10 == plateforme.rect.top \
+                       and self.ninja.rect.colliderect(rectangle):
+                   self.resistance = (0, -10)
+                   self.ninja.nombre_de_saut = 0
+
+            #for rectangle in self.plateforme_liste_rect:
+               #plateforme = Plateforme(rectangle, self.image_plat)
+               #self.plateforme_groupe.add(plateforme)
 
 
             self.delta_temps = self.t2 - self.t1
