@@ -1,6 +1,3 @@
-"Aucun bug avec ce code"
-
-
 import sys
 import time
 import pygame
@@ -9,31 +6,41 @@ from joueurmario import Joueurmario
 from sol import Sol
 from plateforme import Plateforme
 from ninja import Ninja
-from projectiles import Projectile
-# Slash
+from projectiles import Projectile, Slash
 
 
 class Jeu:
     def __init__(self):
 
+        "Fonctions de base :"
         self.ecran = pygame.display.set_mode((1000, 1000))
         pygame.display.set_caption('Mario Jeu')
         self.jeu_encours = True
+
+        "Caractéristiques de Mario :"
         self.joueur_x, self.joueur_y = 200, 200
         self.taille = [32, 64]
         self.joueurmario_vitesse_x = 0
-        self.ninja_vitesse_x = 0
         self.joueurmario = Joueurmario(self.joueur_x, self.joueur_x, self.taille)
-        self.ninja_x, self.ninja_y = 100, 400
-        self.ninja_taille = [39, 64]
-
         self.image_joueur = pygame.image.load("marioracaille.png")
         self.image_joueur_rect = pygame.Rect(0, 0, 111, 145)
-        self.image_ninja = pygame.image.load('kakashi.png')
-        self.ninja = Ninja(self.joueur_x, self.joueur_y, self.ninja_taille)
+        self.joueurmario.gravite = (0, 10)
+        self.joueurmario.resistance = (0, 0)
+        self.joueurmario.collision_sol = True
 
-        self.image_arriere_plan = pygame.image.load("lunatic.jpg")
-        self.arriere_plan_rect = [0, 0, 949, 693]
+        "Caractéristiques du Ninja :"
+        self.ninja_x, self.ninja_y = 100, 400
+        self.ninja_taille = [39, 64]
+        self.ninja_vitesse_x = 0
+        self.ninja = Ninja(self.joueur_x, self.joueur_y, self.ninja_taille)
+        self.image_ninja = pygame.image.load('kakashi.png')
+        self.ninja.gravite = (0, 10)
+        self.ninja.resistance = (0, 0)
+        self.ninja.collision_sol = True
+
+        "Caractéristiques de l'arrière plan, du sol et des plateformes :"
+        self.image_arriere_plan = pygame.image.load("chateaubowser.png")
+        self.arriere_plan_rect = [0, 0, 724, 397]
         self.image_mur = self.image_arriere_plan.subsurface(self.arriere_plan_rect)
         self.image_mur = pygame.transform.scale(self.image_mur, (1000, 700))
         self.rect = pygame.Rect(0, 0, 1000, 1000)
@@ -44,19 +51,16 @@ class Jeu:
         self.image_sol = pygame.transform.scale(self.image_sol, (1000, 300))
         self.sol = Sol(self.image_sol)
 
+        self.plateforme_groupe = Group()
+        self.plateforme_liste_rect = [
+            pygame.Rect(0, 550, 300, 50), pygame.Rect(700, 550, 300, 50),
+            pygame.Rect(340, 400, 300, 50)
+        ]
         self.image_plat_rect = [0, 0, 300, 50]
         self.image_plat = self.image_sol_brique.subsurface(self.image_plat_rect)
         self.image_plat = pygame.transform.scale(self.image_plat, (300, 50))
 
-        self.joueurmario.gravite = (0, 10)
-        self.ninja.gravite = (0, 10)
-
-        self.joueurmario.resistance = (0, 0)
-        self.ninja.resistance = (0, 0)
-
-        self.joueurmario.collision_sol = True
-        self.ninja.collision_sol = True
-
+        "Fonctionnalités du temps dans jeu:"
         self.horloge = pygame.time.Clock()
         self.fps = 30
         self.slash = Group()
@@ -64,25 +68,20 @@ class Jeu:
         self.t1, self.t2 = 0, 0
         self.delta_temps = 0
 
+        "Caractéristiques des projectiles (attaque de Mario) :"
         self.projectile_groupe = Group()
         self.image_boule_de_feu = pygame.image.load("fireball.png")
         self.image_boule_de_feu_rect = pygame.Rect(13, 69, 9, 9)
         self.image_boule_de_feu = self.image_boule_de_feu.subsurface(self.image_boule_de_feu_rect)
 
-        self.plateforme_groupe = Group()
-        self.plateforme_liste_rect = [
-            pygame.Rect(0, 550, 300, 50), pygame.Rect(700, 550, 300, 50),
-            pygame.Rect(340, 400, 300, 50)
-        ]
+        "Caractéristiques des slash (attaque du Ninja) :"
+        self.slash_groupe = Group()
+        self.image_slash = pygame.image.load("kakashi.png")
+        self.slash_image_rect = pygame.Rect(907, 3834, 77, 56)
+        self.image_slash = self.image_ninja.subsurface(self.slash_image_rect)
+        self.image_slash = pygame.transform.scale(self.image_slash, (30,30))
 
-        # self.slash_groupe = Group()
-        # self.slash_image_rect = pygame.Rect(108,232,24,43)
-        # self.image_ninja = pygame.image.load("kakashi.png")
-        # self.image_ninja_rect = pygame.Rect(0, 0, 62, 144)
-        # self.slash_image = self.image_ninja.subsurface(self.slash_image_rect)
-        # self.image_slash = pygame.transform.scale(self.image_slash(30,30), 1)   #J'AI RAJOUTE : ,1 A LA FIN
-        # self.image_joueur1 = pygame.image.load("")
-
+        "Fonctionnalités pas encore au point :"
         # self.debut_time = 90000
         # self.bouton = pygame.image.load("play_button.png")
         # self.bouton_rect = pygame.Rect(0, 0, 148, 148)
@@ -90,11 +89,15 @@ class Jeu:
         # self.image_bouton = pygame.transform.scale(self.image_bouton, (50, 50))
         # self.image_joueur = self.image_joueur.subsurface(self.image_joueur_rect)
 
+    """
+    Boucle principale :
+    """
+
     def boucle_principale(self):
 
+        "Déclaration des dictionnaires d'images des personnages :"
         dictionnaire_vide_joueur = {}
-        dictionnaire_images_joueur = self.joueurmario.convertir_rect_surface(self.image_joueur,
-                                                                             dictionnaire_vide_joueur)
+        dictionnaire_images_joueur = self.joueurmario.convertir_rect_surface(self.image_joueur, dictionnaire_vide_joueur)
         dictionnaire_vide_ninja = {}
         dictionnaire_images_ninja = self.ninja.convertir_rect_surface(self.image_ninja, dictionnaire_vide_ninja)
 
@@ -241,18 +244,23 @@ class Jeu:
                 if projectile.rect.right >= self.rect.right or projectile.rect.left <= self.rect.left:
                     self.projectile_groupe.remove(projectile)
 
-                # if self.ninja.a_attaque:
-                # if len(self.slash_groupe) < self.ninja.tir_autorise :
-                # slash = Slash (self.ninja.rect.x + 20, self.ninja.rect.y - 5, [30, 30], self.image_slash)
-                # self.slash_groupe.remove(slash)
-                # self.ninja.a_attaque = False
+            "Attaque du Ninja :"
 
-            # for slash in self.slash_groupe:
-            # slash.mouvement(50)
-            # if slash.rect.right >= self.rect.right or slash.rect.left <= self.rect.left:
-            # self.slash_groupe.remove(slash)
+            if self.ninja.a_attaque:
+                if len(self.slash_groupe) < self.ninja.tir_autorise :
+                    slash = Slash (self.ninja.rect.x + 20, self.ninja.rect.y - 5, [30, 30], self.image_slash)
+                    self.slash_groupe.add(slash)
+                    self.ninja.a_attaque = False
 
-            # secondes = (self.debut_time - pygame.time.get_ticks()) // 1000
+            for slash in self.slash_groupe:
+                slash.mouvement(50)
+                if slash.rect.right >= self.rect.right or slash.rect.left <= self.rect.left:
+                    self.slash_groupe.remove(slash)
+
+
+            #secondes = (self.debut_time - pygame.time.get_ticks()) // 1000
+
+            "Collision entre les personnages et les plateformes :"
 
             for rectangle in self.plateforme_liste_rect:
                 plateforme = Plateforme(rectangle, self.image_plat)
@@ -268,6 +276,7 @@ class Jeu:
                     self.ninja.resistance = (0, -10)
                     self.ninja.nombre_de_saut = 0
 
+            "Déclarations de toutes les fonctionnalités dans la boucle principale du jeu :"
             self.delta_temps = self.t2 - self.t1
             self.ninja.mouvement(self.ninja_vitesse_x)
             self.joueurmario.mouvement(self.joueurmario_vitesse_x)
@@ -276,14 +285,11 @@ class Jeu:
             self.ecran.fill("Black")
             self.ecran.blit(self.image_mur, self.arriere_plan_rect)
             self.sol.afficher(self.ecran)
-            # self.ecran.blit(self.image_ciel, self.rect)
             self.joueurmario.rect.clamp_ip(self.rect)
             self.ninja.rect.clamp_ip(self.rect)
             self.joueurmario.afficher(self.ecran, dictionnaire_images_joueur)
             self.ninja.afficher(self.ecran, dictionnaire_images_ninja)
             self.horloge.tick(self.fps)
-            # self.ecran.blit(self.image_bouton, (525, 20, 50, 50))
-            # self.creer_message('grande', '()'.format(secondes), [535, 60, 20, 20], (255, 255, 255))
 
             for plateforme in self.plateforme_groupe:
                 plateforme.afficher(self.ecran)
@@ -291,11 +297,16 @@ class Jeu:
             for projectile in self.projectile_groupe:
                 projectile.afficher(self.ecran, self.delta_temps)
 
-            # for slash in self.slash_groupe:
-            # slash.afficher(self.ecran)
+            for slash in self.slash_groupe:
+                slash.afficher(self.ecran)
 
             pygame.display.flip()
 
+            "Fonctionnalités pas encore au point :"
+            # self.ecran.blit(self.image_bouton, (525, 20, 50, 50))
+            # self.creer_message('grande', '()'.format(secondes), [535, 60, 20, 20], (255, 255, 255))
+
+    "Définition des fonctions gravité des personnages :"
     def joueurmario_gravite_jeu(self):
 
         self.joueurmario.rect.y += self.joueurmario.gravite[1] + self.joueurmario.resistance[1]
