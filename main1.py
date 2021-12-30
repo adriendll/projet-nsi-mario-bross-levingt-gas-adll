@@ -1,8 +1,5 @@
-"A corriger : full bug au niveau des sauts de mario et du ninja + ninja qui a pas de gravité au début "
-"Rajouter la collision entre les et enlever les hashtag sur les attaques du ninja pour voir ce que ça fait "
+"Aucun bug avec ce code"
 
-"Dcp j'ai corrigé les problèmes ci dessus, la mnt faudrait réussir à faire en sorte que les personnages redeviennet à l'état debout en touchant le sol après avoir sauté, "
-"parce que la il restent debout mais ils gardent les images du saut "
 
 import sys
 import time
@@ -51,15 +48,12 @@ class Jeu:
         self.image_plat = self.image_sol_brique.subsurface(self.image_plat_rect)
         self.image_plat = pygame.transform.scale(self.image_plat, (300, 50))
 
-        #self.gravite = (0, 10)
         self.joueurmario.gravite = (0, 10)
         self.ninja.gravite = (0, 10)
 
-        #self.resistance = (0, 0)
         self.joueurmario.resistance = (0, 0)
         self.ninja.resistance = (0, 0)
 
-        #self.collision_sol = True
         self.joueurmario.collision_sol = True
         self.ninja.collision_sol = True
 
@@ -200,39 +194,37 @@ class Jeu:
 
             if self.sol.rect.colliderect(self.joueurmario.rect):
 
-                #self.resistance = (0, -10)
                 self.joueurmario.resistance = (0, -10)
-                #self.collision_sol = True
                 self.joueurmario.collision_sol = True
                 self.joueurmario.nombre_de_saut = 0
 
             else:
-                #self.resistance = (0, 0)
                 self.joueurmario.resistance = (0, 0)
 
-            #if self.joueurmario.a_sauter and self.collision_sol:
             if self.joueurmario.a_sauter and self.joueurmario.collision_sol:
                 if self.joueurmario.nombre_de_saut < 2:
                     self.joueurmario.sauter()
+
+            if self.joueurmario.nombre_de_saut < 2 and self.sol.rect.colliderect(self.joueurmario.rect) :
+                self.joueurmario.etat = "debout"
 
             "Collision entre Ninja et le sol :"
 
             if self.sol.rect.colliderect(self.ninja.rect):
 
-                #self.resistance = (0, -10)
                 self.ninja.resistance = (0, -10)
-                #self.collision_sol = True
                 self.ninja.collision_sol = True
                 self.ninja.nombre_de_saut = 0
 
             else:
-                # self.resistance = (0, 0)
                 self.ninja.resistance = (0, 0)
 
-            #if self.ninja.a_sauter and self.collision_sol:
             if self.ninja.a_sauter and self.ninja.collision_sol:
                 if self.ninja.nombre_de_saut < 2:
                     self.ninja.sauter()
+
+            if self.ninja.nombre_de_saut < 2 and self.sol.rect.colliderect(self.ninja.rect) :
+                self.ninja.etat = "debout"
 
             "Attaque de Mario :"
 
@@ -268,20 +260,17 @@ class Jeu:
 
                 if self.joueurmario.rect.midbottom[1] // 10 * 10 == plateforme.rect.top \
                         and self.joueurmario.rect.colliderect(rectangle):
-                    #self.resistance = (0, -10)
                     self.joueurmario.resistance = (0, -10)
                     self.joueurmario.nombre_de_saut = 0
 
                 if self.ninja.rect.midbottom[1] // 10 * 10 == plateforme.rect.top \
                         and self.ninja.rect.colliderect(rectangle):
-                    #self.resistance = (0, -10)
                     self.ninja.resistance = (0, -10)
                     self.ninja.nombre_de_saut = 0
 
             self.delta_temps = self.t2 - self.t1
             self.ninja.mouvement(self.ninja_vitesse_x)
             self.joueurmario.mouvement(self.joueurmario_vitesse_x)
-            #self.gravite_jeu()
             self.joueurmario_gravite_jeu()
             self.ninja_gravite_jeu()
             self.ecran.fill("Black")
@@ -295,11 +284,13 @@ class Jeu:
             self.horloge.tick(self.fps)
             # self.ecran.blit(self.image_bouton, (525, 20, 50, 50))
             # self.creer_message('grande', '()'.format(secondes), [535, 60, 20, 20], (255, 255, 255))
+
             for plateforme in self.plateforme_groupe:
                 plateforme.afficher(self.ecran)
 
             for projectile in self.projectile_groupe:
                 projectile.afficher(self.ecran, self.delta_temps)
+
             # for slash in self.slash_groupe:
             # slash.afficher(self.ecran)
 
@@ -307,11 +298,9 @@ class Jeu:
 
     def joueurmario_gravite_jeu(self):
 
-        #self.joueurmario.rect.y += self.gravite[1] + self.resistance[1]
         self.joueurmario.rect.y += self.joueurmario.gravite[1] + self.joueurmario.resistance[1]
 
     def ninja_gravite_jeu(self):
-        #self.ninja.rect.y += self.gravite[1] + self.resistance[1]
         self.ninja.rect.y += self.ninja.gravite[1] + self.ninja.resistance[1]
 
     # def creer_message(self, font, message, message_rectangle, couleur):
